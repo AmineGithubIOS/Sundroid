@@ -2,7 +2,7 @@ const ms = require("ms")
 const { EmbedBuilder, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, UserSelectMenuBuilder, Collection } = require("discord.js")
 const { QuickDB } = require("quick.db")
 const db = new QuickDB()
-const captcha = require("./database/models/captcha.js");
+const captcha = require("../../database/models/captcha.js");
 
 module.exports = {
     name: "guildMemberAdd",
