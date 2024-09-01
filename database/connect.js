@@ -6,7 +6,7 @@ mongoose.connect("mongodb+srv://sundroid:fabrice125@cluster0.uls9q.mongodb.net/?
    useUnifiedTopology: true
 })
 
-mongoose.set("strictQuery", true);
+mongoose.set("strictQuery", false);
 const db = mongoose.connection
 db.once('open', () => {
    console.log(`[DATABASE] Connexion établie`.bold.red);
