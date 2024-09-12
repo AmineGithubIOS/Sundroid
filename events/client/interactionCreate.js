@@ -11,9 +11,6 @@ module.exports = {
             if (!interaction || !interaction.id) {
                 throw new Error('Interaction or interaction.id is null');
             }
-
-            // Traitement de l'interaction
-            // Supposons que slashCommands est une fonction ou un objet que tu utilises
             await slashCommands(interaction);
         } catch (error) {
             console.error('Error handling interaction:', error);

@@ -11,11 +11,7 @@ module.exports = {
         if(!data) return interaction.reply({ content: `**The bump system has not yet been configured, please ask an administrator to do so.**`, ephemeral: true })
         const channel = interaction.guild.channels.cache.get(data.channelId)
         if(!data.channelId) return interaction.reply({ content: `**You must define a bump arrival channel before you can bump.**`, ephemeral: true })
-        const perms = channel.permissionsFor(interaction.guild.roles.everyone);
-        
-        const ready = perms.has(PermissionFlagsBits.ViewChannel)
-        if(!ready) return interaction.reply({ content: `**Before you can bump, the bump channel must be visible to all members.**`, ephemeral: true})
-        
+                
         const toIgnore = [interaction.guild.id, "766748363797299290"]
         const datas = await bump.find({ guildId: { $nin: toIgnore} })
         

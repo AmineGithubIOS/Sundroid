@@ -32,6 +32,6 @@ client.on('ready', async () => {
 
 client.login(config.token)
 
-client.color = "#2c2d31"
-client.invite = "https://discord.gg/gAa8vw4n"
-client.image = "https://cdn.discordapp.com/attachments/1134054891506118666/1134080378903216148/20230726_165719.png";
+client.color = config.color
+client.invite = config.invite
+client.image = config.image

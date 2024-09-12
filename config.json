@@ -1,0 +1,7 @@
+{
+    "token": "Your bot token",
+    "color": "#FF0000",
+    "invite": "Your bot invite",
+    "image": "Your bot banner",
+    "mongoose": "Your mongoose database link"
+}

@@ -1,12 +1,10 @@
 const mongoose = require("mongoose")
 const colors = require("colors")
+const config = require("../config.json")
 
-mongoose.connect("mongodb+srv://sundroid:fabrice125@cluster0.uls9q.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", {
-   useNewUrlParser: true,
-   useUnifiedTopology: true
-})
+mongoose.connect(config.mongoose)
 
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', true);
 const db = mongoose.connection
 db.once('open', () => {
    console.log(`[DATABASE] Connexion établie`.bold.red);
