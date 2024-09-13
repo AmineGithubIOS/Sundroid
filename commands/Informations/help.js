@@ -1,200 +1,112 @@
-const { EmbedBuilder, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require("discord.js");
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder } = require("discord.js");
 
 module.exports = {
   name: "help",
-  description: "Display all bot commands",
+  description: "Display an interactive help menu with all bot commands",
   category: "Info",
   execute: async (client, interaction) => {
     try {
-      // Utilisation de deferReply pour éviter l'expiration
       await interaction.deferReply();
 
-      const menu = new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId("menu")
-          .addOptions(
-            new StringSelectMenuOptionBuilder()
-              .setValue("why")
-              .setEmoji("❓")
-              .setLabel("Why add me to your server ?"),
-            new StringSelectMenuOptionBuilder()
-              .setEmoji("🛡️")
-              .setValue("modo")
-              .setLabel("Moderation commands"),
-            new StringSelectMenuOptionBuilder()
-              .setEmoji("🔩")
-              .setValue("utils")
-              .setLabel("Utilities Commands"),
-            new StringSelectMenuOptionBuilder()
-              .setEmoji("ℹ️")
-              .setValue("info")
-              .setLabel("Information Commands"),
-            new StringSelectMenuOptionBuilder()
-              .setEmoji("📁")
-              .setValue("eco")
-              .setLabel("Management Commands")
-          )
-      );
-
-      const back = new ActionRowBuilder().addComponents(
+      // Boutons de catégories de commandes
+      const categoryRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setLabel("Back")
+          .setCustomId("category_moderation")
+          .setLabel("Moderation")
+          .setStyle(1) // Primary button
+          .setEmoji("🛡️"),
+        new ButtonBuilder()
+          .setCustomId("category_utilities")
+          .setLabel("Utilities")
           .setStyle(1)
-          .setCustomId("back")
-          .setEmoji("↩️")
+          .setEmoji("🔧"),
+        new ButtonBuilder()
+          .setCustomId("category_information")
+          .setLabel("Information")
+          .setStyle(1)
+          .setEmoji("ℹ️"),
+        new ButtonBuilder()
+          .setCustomId("category_fun")
+          .setLabel("Fun")
+          .setStyle(1)
+          .setEmoji("🎉")
       );
 
-      const btn = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setLabel("Support")
-          .setEmoji("✨")
-          .setCustomId("join")
-          .setStyle(1),
-        new ButtonBuilder()
-          .setEmoji("🤖")
-          .setLabel("Invite")
-          .setURL(client.invite)
-          .setStyle(5),
-        new ButtonBuilder()
-          .setLabel("Find a command")
-          .setEmoji("🔍")
-          .setStyle(3)
-          .setCustomId("search")
-      );
-
-      const commandsByCategory = {};
-      const slashCommands = client.slashCommands;
-
-      slashCommands.forEach(cmd => {
-        if (!commandsByCategory[cmd.category]) {
-          commandsByCategory[cmd.category] = [];
-        }
-        commandsByCategory[cmd.category].push(cmd);
-      });
-
-      const moderationCommands = commandsByCategory["Mod"];
-      const utilsCommands = commandsByCategory["Utils"];
-      const ecoCmds = commandsByCategory["gestion"];
-      const embed = new EmbedBuilder()
-        .setTitle("List of bot commands")
-        .setURL(client.invite)
-        .setDescription(
-          `**You want to have a versatile bot with unique commands and an intuitive interface, \`${client.user.username}\` is for you. Also, already \`${client.guilds.cache.size}\` servers trust us.**`
-        )
-        .setImage(client.image)
-        .setColor(client.color)
-        .setAuthor({
-          name: `Full list of bot commands`,
-          iconURL: client.user.displayAvatarURL(),
-        })
-        .setFooter({
-          text: client.user.username,
-          iconURL: client.user.displayAvatarURL(),
-        })
+      const mainEmbed = new EmbedBuilder()
+        .setTitle("SunDroid Help Menu")
+        .setDescription("Select a category to view the available commands.")
+        .setColor("#00FFAB") // Couleur moderne
+        .setThumbnail(client.user.displayAvatarURL())
+        .setFooter({ text: "SunDroid - Your versatile Discord bot" })
         .setTimestamp();
 
-      // Envoi du message initial
-      const msg = await interaction.editReply({
-        embeds: [embed],
-        components: [menu, btn],
+      const helpMessage = await interaction.editReply({
+        embeds: [mainEmbed],
+        components: [categoryRow],
       });
 
-      // Création du collecteur
-      const collector = await msg.createMessageComponentCollector({
+      // Collecteur pour gérer les interactions
+      const collector = helpMessage.createMessageComponentCollector({
         filter: i => i.user.id === interaction.user.id,
-        time: 100000,
+        time: 60000, // 1 minute
       });
 
       collector.on("collect", async i => {
-        try {
-          if (i.customId === "menu") {
-            if (i.values[0] === "modo")
-              return i.update({
-                embeds: [
-                  new EmbedBuilder()
-                    .setDescription(
-                      `${utilsCommands
-                        .map(
-                          x =>
-                            `**</${x.name}:1>\n> Description : ${x.description}**`
-                        )
-                        .join("\n\n")}`
-                    )
-                    .setAuthor({
-                      name: `List of moderation commands`,
-                      iconURL: client.user.displayAvatarURL(),
-                    })
-                    .setColor(client.color),
-                ],
-                components: [back],
-              });
-            if (i.values[0] === "eco")
-              return i.update({
-                embeds: [
-                  new EmbedBuilder()
-                    .setDescription(
-                      `${ecoCmds
-                        .map(
-                          x =>
-                            `**</${x.name}:1>\n> Description : ${x.description}**`
-                        )
-                        .join("\n\n")}`
-                    )
-                    .setAuthor({
-                      name: `List of management commands`,
-                      iconURL: client.user.displayAvatarURL(),
-                    })
-                    .setColor(client.color),
-                ],
-                components: [back],
-              });
-            // Autres options...
+        if (i.customId.startsWith("category_")) {
+          let categoryName;
+          let categoryDescription;
+
+          // Définition du contenu en fonction de la catégorie choisie
+          if (i.customId === "category_moderation") {
+            categoryName = "Moderation Commands";
+            categoryDescription = client.slashCommands
+              .filter(cmd => cmd.category === "Mod")
+              .map(cmd => `**/${cmd.name}** - ${cmd.description}`)
+              .join("\n");
+          } else if (i.customId === "category_utilities") {
+            categoryName = "Utilities Commands";
+            categoryDescription = client.slashCommands
+              .filter(cmd => cmd.category === "Utils")
+              .map(cmd => `**/${cmd.name}** - ${cmd.description}`)
+              .join("\n");
+          } else if (i.customId === "category_information") {
+            categoryName = "Information Commands";
+            categoryDescription = client.slashCommands
+              .filter(cmd => cmd.category === "Info")
+              .map(cmd => `**/${cmd.name}** - ${cmd.description}`)
+              .join("\n");
+          } else if (i.customId === "category_fun") {
+            categoryName = "Fun Commands";
+            categoryDescription = client.slashCommands
+              .filter(cmd => cmd.category === "Fun")
+              .map(cmd => `**/${cmd.name}** - ${cmd.description}`)
+              .join("\n");
           }
 
-          if (i.customId === "join") {
-            i.reply({ content: `${client.invite}`, ephemeral: true });
-          }
+          // Affichage de l'embed pour la catégorie choisie
+          const categoryEmbed = new EmbedBuilder()
+            .setTitle(categoryName)
+            .setDescription(categoryDescription)
+            .setColor("#FF6347") // Couleur pour cette section
+            .setFooter({ text: `Requested by ${interaction.user.tag}` })
+            .setTimestamp();
 
-          if (i.customId === "back") {
-            i.update({ embeds: [embed], components: [menu, btn] });
-          }
-
-          if (i.customId === "search") {
-            const modal = new ModalBuilder()
-              .setTitle("Order search")
-              .setCustomId("modal");
-            const cmdSearch = new ActionRowBuilder().addComponents(
-              new TextInputBuilder()
-                .setCustomId("cmdTo")
-                .setLabel("Please enter the command name.")
-                .setStyle(TextInputStyle.Short)
-                .setPlaceholder("Enter the command name")
-            );
-            modal.addComponents(cmdSearch);
-            await i.showModal(modal);
-          }
-        } catch (error) {
-          console.error("Error handling interaction:", error);
-          i.reply({
-            content: "There was an error processing your request.",
-            ephemeral: true,
-          });
+          await i.update({ embeds: [categoryEmbed], components: [categoryRow] });
         }
       });
 
       collector.on("end", async () => {
         try {
-          btn.components.forEach(x => x.setDisabled(true));
-          menu.components.forEach(x => x.setDisabled(true));
-          await msg.edit({ components: [menu, btn] });
+          categoryRow.components.forEach(button => button.setDisabled(true));
+          await helpMessage.edit({ components: [categoryRow] });
         } catch (error) {
-          console.error("Error disabling components after collector ends:", error);
+          console.error("Error disabling buttons after collector ends:", error);
         }
       });
     } catch (error) {
       console.error("Error executing command:", error);
       interaction.followUp({
-        content: "There was an error while executing this command.",
+        content: "An error occurred while executing the help command.",
         ephemeral: true,
       });
     }
